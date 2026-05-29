@@ -1,4 +1,4 @@
-**Introduction: Practical Vulnerability Assessment**
+**Introduction: Practical Vulnerability Assessment** br
 The report is a practical demonstration of offensive and defensive security techniques. The focus includes traffic analysis and malware identification, as well as port scanning and legitimate service verification. It shows a good understanding of tools like Wireshark, Nmap, WindowsPowershell, Windows task Manager and VirusTotal. It also shows an understanding of network troubleshooting commands.
 1.	Network Vulnerability scanning: Packet Sniffing
 Aim: To monitor data packets and capture the passwords, taking into consideration the different Protocols, actions requests such as POST or GET. Softwares used in Oracle VirtualBox:  I used Wireshark to analyse the packet with the IP: 10.0.2.15 which is on HTTP protocol.
