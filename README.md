@@ -1,79 +1,166 @@
-**Introduction: Practical Vulnerability Assessment** 
+# Practical Vulnerability Assessment: Packet Sniffing, Malware Identification & Port Investigation
 
-The report is a practical demonstration of offensive and defensive security techniques. The focus includes traffic analysis and malware identification, as well as port scanning and legitimate service verification. It shows a good understanding of tools like Wireshark, Nmap, WindowsPowershell, Windows task Manager and VirusTotal. It also shows an understanding of network troubleshooting commands.
-1.	Network Vulnerability scanning: Packet Sniffing
-Aim: To monitor data packets and capture the passwords, taking into consideration the different Protocols, actions requests such as POST or GET. Softwares used in Oracle VirtualBox:  I used Wireshark to analyse the packet with the IP: 10.0.2.15 which is on HTTP protocol.
+## Objective
 
-1.	Kali Linux 
-2.	Wireshark 
+This project is a practical demonstration of offensive and defensive security techniques across three investigations. The first captures plaintext login credentials over the insecure HTTP protocol using packet sniffing, showing why unencrypted traffic is a vulnerability. The second analyzes a suspicious file hash to identify malware and attribute it to a known family. The third performs a port scan against a Windows host and traces an open port back to the exact process and service listening on it, verifying whether it is legitimate. Together, the investigations combine traffic analysis, malware identification, port scanning, and service verification, demonstrating hands-on use of Wireshark, Nmap, VirusTotal, Windows PowerShell, and Windows Task Manager, along with core network troubleshooting commands.
 
-**Steps**
-Slect the application icon on the top left of your Kali linux as marked in green on the screenshot 1 below. Using the search box as shown of the screenshot two to search for wireshark and open by clicking once on wireshark.
+## Skills Learned
 
+* Capturing and analyzing live network traffic in Wireshark, filtering by protocol and isolating POST and GET requests.
+* Recognizing the security weakness of HTTP (port 80): credentials sent in plaintext can be recovered from captured packets.
+* Analyzing file hashes with VirusTotal, interpreting community detection ratios, and attributing a sample to a malware family.
+* Recognizing SHA-256 hashes and how a single sample can appear under multiple filenames and file types.
+* Port scanning with Nmap to enumerate open ports on a host.
+* Tracing an open port to its owning process using `netstat -ano` (PID lookup) and Windows Task Manager, then verifying the service.
+* Troubleshooting when Linux socket-listing commands (`netstat`, `ss`) return no data by pivoting to the correct host's native tooling.
+* Distinguishing legitimate system services from suspicious activity and understanding the risk posed by unnecessary open ports.
 
-<img width="600" height="300" alt="image" src="https://github.com/user-attachments/assets/266b547f-0b84-466f-b40e-c366b0107e6e" />
+## Tools Used
 
-After opening the wireshark, the screen will show as captured below. In this case, we will be using eth0. As shown on the screen below as well, I was on tab 2. 
+* Kali Linux running in Oracle VirtualBox.
+* Wireshark for packet capture and traffic analysis.
+* Nmap for port scanning.
+* VirusTotal for file hash reputation and malware family attribution.
+* Windows PowerShell (`netstat -ano`) and Windows Task Manager for process and service investigation.
+* Network troubleshooting commands: `netstat -tulpn`, `ss -tulpn`.
 
-<img width="600" height="300" alt="image" src="https://github.com/user-attachments/assets/f905e8f9-6372-4574-95b7-418336772d16" />
+---
 
+## Investigation 1 — Network Vulnerability Scanning: Packet Sniffing
 
-At this point, I swtched to tab 1 where I opened the firefox browser to search for the website I used for this simulation: www.techpanda.org (This is just for practical) 
+**Aim:** To monitor data packets and capture login credentials, taking into account the different protocols and action requests such as POST and GET. Analysis was performed on the host with IP `10.0.2.15` communicating over HTTP.
 
- 
-<img width="600" height="300" alt="image" src="https://github.com/user-attachments/assets/181a3cd9-3d59-495a-9c6b-8e5af962c72e" />
+### Step 1: Launch Wireshark
 
+*Ref 1: Opening Wireshark from the Kali Linux application menu*
 
-After entering the website, the login page below opens. This is similar to a normal website that one can visit and try to login on daily basis. Here I entered wrong email address and password while we capture the traffic of login requests. Note that there are some actions which can be performed in the process of using the web and this is normally under the info column of of the logs captured as shall be seen in subsequent screenshots. However, in this case, I am concerned with Post and Get reguests. The login detail used include:
-email address: gshddhhd@gmail.com
-Password: thththth
+<img width="600" height="300" alt="Launching Wireshark from the Kali application menu" src="https://github.com/user-attachments/assets/266b547f-0b84-466f-b40e-c366b0107e6e" />
 
- <img width="600" height="300" alt="image" src="https://github.com/user-attachments/assets/54cb8307-30e6-4f86-a5a9-fcfec6b70796" />
+Selected the application icon at the top left of Kali Linux (marked in green) and used the search box to find and open Wireshark.
 
-Outcome: Going back to wirshark, it has already captures some traffic. And I searched based on protocol, htt p for the IP: 10.0.2.15 The vulnerability of HTTP protocol made it possible to see the login detail of the IP user 10.0.2.15, as highlighted on the screenshot below. Knowing that the unsecure web protocaol was based on pot 80 which is HTTP and I made a POST by sending a login request, I can search for the HTTP protocol as shown below with a POST action under the info column.
+### Step 2: Select the capture interface
 
- <img width="600" height="300" alt="image" src="https://github.com/user-attachments/assets/9de8f16d-cb28-4c9c-a5ef-e75c3fc53902" />
+*Ref 2: Selecting the eth0 interface for capture*
 
+<img width="600" height="300" alt="Wireshark interface selection showing eth0" src="https://github.com/user-attachments/assets/f905e8f9-6372-4574-95b7-418336772d16" />
 
-2. **Scanning of Hash value**
-Hash Value: f02ce710874cd773c3c32730dc2536d14f4e419bf828d4a27664a24af5d4484f
-Tools used: Virus total, 
-Results, Type of Hash: SHA 256  
+With Wireshark open, selected the `eth0` interface to begin capturing traffic (working from tab 2).
 
-<img width="600" height="300" alt="image" src="https://github.com/user-attachments/assets/76b4b18a-ea16-4886-aad3-1fc7aeed728b" />
+### Step 3: Browse to the target login page
 
-Decision: It is a trojan malicious file because: 
-a. The community vulnerability score ratio shows 42/64
-b. the file hash valued has varied into four different types making it suspicious: like
-1.  _f02ce710874cd773c3c32730dc2536d14f4e419bf828d4a2 7664a24af5d4484f.elf 
-2. f02ce710874cd773c3c32730dc2536d14f4e419bf828d4a27 664a24af5d4484f.elf
-3.  jmlvg.exe
-4. Polar.ppc.elf
-**Family**: the hash variant belongs to Condi malware family, a botnet which affects vulnerable network devices on Linux.
+*Ref 3: Opening the practice website in Firefox*
 
-2.	**Nmap scan, WindowsPowerShell and Wndows Task Manger**
+<img width="600" height="300" alt="Opening www.techpanda.org in Firefox on tab 1" src="https://github.com/user-attachments/assets/181a3cd9-3d59-495a-9c6b-8e5af962c72e" />
 
-**Purpose**: To find out the open pots on my windows computer, why they are open and the service listening on those pots.
-Tools: Nmap on Kali Linux, windows PowerShell and Windows task manager.
-Processes:
-1.	I scanned my IP to find out the pots that are open. For security reasons, I won’t add my IP address here: the result of the scan shows the following;
-To run a scan, I used the following command; Nmap 192. 168.20.10 (random IP for this report).
-**Outcome**: The result shows that many pots below are open. Looking at port 135/tcp as a case, I tried to find out the process that runs on pot 135.
+Switched to tab 1 and opened Firefox, browsing to the practice website `www.techpanda.org` (used purely for this simulation).
 
- <img width="600" height="300" alt="image" src="https://github.com/user-attachments/assets/629dc4ad-c80a-4351-b279-6060d84205c9" />
+### Step 4: Submit login credentials while capturing
 
-To find out the services that are listening to 	all the pots, I entered the command; sudo netstat -tulpn (the columns showed but no data were populated). I also tried other commands such as; sudo ss -tulpn and netstat -tulpn but no result was showing. Then I moved to windows PowerShell since the IP I scanned was from a windows PC. 
+*Ref 4: Entering test credentials on the login page*
 
-**Next Step**: I ran the windows PowerShell as an administrator and entered the command; netstat -ano, to see the list of active connections. The list below shows that port 135/tcp has PID of 1592. The PID is process ID and it is useful in finding out which connection is attached to a specific service.
+<img width="600" height="300" alt="Login page with test credentials entered" src="https://github.com/user-attachments/assets/54cb8307-30e6-4f86-a5a9-fcfec6b70796" />
 
-<img width="600" height="300" alt="image" src="https://github.com/user-attachments/assets/5f6f8537-06b6-4804-a79b-e96918f8aeb7" />
+Entered a deliberately incorrect email and password while the capture ran, generating a login request. Browser actions are recorded under the Info column of the captured packets; the focus here was on the POST and GET requests.
 
-TO find out the process that is running with the PID of 1592, I opened the windows task manager of my computer. On the task manager, I selected the details menu to see the processes that are running with their respective PID. The output of my search after pressing CTRL F and entering the PID 1592 is indicated below:
+* Email: `gshddhhd@gmail.com`
+* Password: `thththth`
 
-<img width="600" height="300" alt="image" src="https://github.com/user-attachments/assets/49b39c35-9658-487a-9bbe-f28e66c2917d" />
+### Step 5: Recover the credentials from the capture
 
-The PID 1592 shows that the process is associated with the ID is swchost.exe, upon my research, I found that the service swchost.exe is a legitimate windows service.  As a result, the msrpc service as shown below is a legitimate windows service
+*Ref 5: HTTP POST request revealing the submitted credentials in plaintext*
 
+<img width="600" height="300" alt="Wireshark showing the HTTP POST request with plaintext login details" src="https://github.com/user-attachments/assets/9de8f16d-cb28-4c9c-a5ef-e75c3fc53902" />
 
-**Implication**: Open ports could be a means for attackers to penetrate a computer. Although, swchost.exe  is legitimate,  other ports need to be protected by being closed to avoid being an exploited by an attacker.
+Returning to Wireshark, traffic had already been captured. Filtering on the HTTP protocol for IP `10.0.2.15` and locating the POST action under the Info column exposed the login details in plaintext. Because HTTP operates over port 80 without encryption, the credentials submitted in the login request were fully readable, demonstrating the core vulnerability of unsecured web traffic.
 
+---
+
+## Investigation 2 — Malware Identification via Hash Analysis
+
+**Hash analyzed:** `f02ce710874cd773c3c32730dc2536d14f4e419bf828d4a27664a24af5d4484f`
+**Tool used:** VirusTotal
+**Hash type:** SHA-256
+
+*Ref 6: VirusTotal analysis of the file hash*
+
+<img width="600" height="300" alt="VirusTotal detection results for the analyzed SHA-256 hash" src="https://github.com/user-attachments/assets/76b4b18a-ea16-4886-aad3-1fc7aeed728b" />
+
+**Assessment: the file is a malicious trojan.** Reasoning:
+
+* The community detection ratio was **42/64**, indicating the majority of security vendors flagged it as malicious.
+* The same hash appeared under multiple filenames and file types, a common evasion trait:
+  1. `f02ce710...5d4484f.elf`
+  2. `f02ce710...5d4484f.elf` (variant)
+  3. `jmlvg.exe`
+  4. `Polar.ppc.elf`
+
+**Family:** the sample belongs to the **Condi** malware family, a botnet that targets vulnerable network devices running Linux.
+
+---
+
+## Investigation 3 — Nmap Scan, PowerShell & Task Manager Correlation
+
+**Purpose:** To find out which ports are open on a Windows host, why they are open, and which service is listening on them.
+
+**Tools:** Nmap (Kali Linux), Windows PowerShell, Windows Task Manager.
+
+### Step 1: Scan for open ports
+
+*Ref 7: Nmap scan revealing open ports*
+
+<img width="600" height="300" alt="Nmap scan output showing open ports including 135/tcp" src="https://github.com/user-attachments/assets/629dc4ad-c80a-4351-b279-6060d84205c9" />
+
+```bash
+nmap 192.168.20.10   # IP randomized for this report
+```
+
+The scan returned several open ports. Port `135/tcp` was chosen as the case to investigate further.
+
+*(The actual scanned IP is withheld for security reasons.)*
+
+### Step 2: Attempt to identify the listening service on Linux
+
+Tried to list listening services from Kali:
+
+```bash
+sudo netstat -tulpn
+sudo ss -tulpn
+netstat -tulpn
+```
+
+The columns displayed but no data populated, since the scanned host was a Windows PC. This prompted a pivot to Windows-native tooling.
+
+### Step 3: List active connections in PowerShell
+
+*Ref 8: netstat -ano in PowerShell mapping port 135 to a PID*
+
+<img width="600" height="300" alt="PowerShell netstat -ano output showing PID 1592 for port 135" src="https://github.com/user-attachments/assets/5f6f8537-06b6-4804-a79b-e96918f8aeb7" />
+
+Running PowerShell as administrator:
+
+```powershell
+netstat -ano
+```
+
+The output showed that port `135/tcp` mapped to **PID 1592**. The process ID (PID) is what links a connection to a specific running service.
+
+### Step 4: Identify the process behind the PID
+
+*Ref 9: Windows Task Manager resolving PID 1592 to a process*
+
+<img width="600" height="300" alt="Task Manager Details tab showing PID 1592 as svchost.exe" src="https://github.com/user-attachments/assets/49b39c35-9658-487a-9bbe-f28e66c2917d" />
+
+Opened Windows Task Manager, selected the **Details** tab to view running processes with their PIDs, and used `Ctrl+F` to search for PID 1592. The result identified the process as `svchost.exe`.
+
+**Verification:** research confirmed `svchost.exe` (hosting the `msrpc` service on port 135) is a legitimate Windows service.
+
+**Implication:** open ports can serve as entry points for attackers. Although `svchost.exe` is legitimate, other unnecessary ports should be closed to reduce the attack surface and avoid exploitation.
+
+---
+
+## Conclusion
+
+* HTTP's lack of encryption makes credential theft trivial for anyone on the network path; this is the practical case for HTTPS/TLS everywhere.
+* A hash plus VirusTotal is often enough to triage a suspicious file: the detection ratio, multiple aliases, and family attribution together build the verdict.
+* Enumerating an open port is only the first step; the real analyst work is tracing it to a process (PID) and a service, then judging whether it is legitimate.
+* Knowing when a tool is the wrong fit (Linux `netstat` against a Windows host) and pivoting to the right one is itself a core troubleshooting skill.
