@@ -26,7 +26,7 @@ This project is a practical demonstration of offensive and defensive security te
 
 ---
 
-## Investigation 1 — Network Vulnerability Scanning: Packet Sniffing
+## Investigation 1: Network Vulnerability Scanning: Packet Sniffing
 
 **Aim:** To monitor data packets and capture login credentials, taking into account the different protocols and action requests such as POST and GET. Analysis was performed on the host with IP `10.0.2.15` communicating over HTTP.
 
@@ -75,7 +75,7 @@ Returning to Wireshark, traffic had already been captured. Filtering on the HTTP
 
 ---
 
-## Investigation 2 — Malware Identification via Hash Analysis
+## Investigation 2: Malware Identification via Hash Analysis
 
 **Hash analyzed:** `f02ce710874cd773c3c32730dc2536d14f4e419bf828d4a27664a24af5d4484f`
 **Tool used:** VirusTotal
@@ -98,7 +98,7 @@ Returning to Wireshark, traffic had already been captured. Filtering on the HTTP
 
 ---
 
-## Investigation 3 — Nmap Scan, PowerShell & Task Manager Correlation
+## Investigation 3: Nmap Scan, PowerShell & Task Manager Correlation
 
 **Purpose:** To find out which ports are open on a Windows host, why they are open, and which service is listening on them.
 
